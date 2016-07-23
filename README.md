@@ -5,3 +5,4 @@ This is a sandbox repository I use to play with Haskell.
 ## Contents
 
 * Hello World
+* Geometry - simple server process
