@@ -16,5 +16,6 @@ loop() ->
       From ! Side * Side,
       loop();
     { From, Other } ->
-      From ! { error, Other }
+      From ! { error, Other },
+      loop()
   end.
