@@ -11,3 +11,6 @@ This is a sandbox repository I use to play with Haskell.
   * simple server process
   * handling unknown messages
   * send/wait wrapper (rpc)
+* Generic Servers
+  * name server
+  * server1
