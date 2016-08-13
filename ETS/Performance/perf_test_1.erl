@@ -1,9 +1,14 @@
 -module(perf_test_1).
--export([test_ets/1]).
+-export([test_ets/0]).
 
-test_ets(NumberOfElementsInTheTable) ->
-  file:write_file("test_results.md", "| Number Of elements in the Table | Insertion Time [ms] | Memory Allocated [MB] |\n| --- | --- | --- |\n"),
-  test_ets(5, NumberOfElementsInTheTable).
+test_ets() ->
+    file:write_file("test_results.md", "| Number Of elements in the Table | Insertion Time [ms] | Memory Allocated [MB] |\n| --- | --- | --- |\n"),
+    test_ets(10000000).
+
+test_ets(NumberOfElementsInTheTable) when NumberOfElementsInTheTable == 0 -> io:format("All tests finished.\n");
+test_ets(NumberOfElementsInTheTable) when NumberOfElementsInTheTable > 0 ->
+  test_ets(1, NumberOfElementsInTheTable),
+  test_ets(NumberOfElementsInTheTable - 100000).
 
 test_ets(NumberOfRepetitions, _) when NumberOfRepetitions == 0 -> io:format("All repetitions finished.\n");
 test_ets(NumberOfRepetitions, NumberOfElementsInTheTable) when NumberOfRepetitions > 0 ->
@@ -36,7 +41,7 @@ test_large_table(NumberOfElementsInTheTable) ->
   file:write_file(
     "test_results.md",
     io_lib:fwrite(
-      "| ~p | ~p | ~p |\n",
+      "| ~p | ~.2f | ~.2f |\n",
       [ets:info(TestTable, size),
       translate_microseconds_to_milliseconds(TimeTaken),
       translate_words_to_megabytes(ets:info(TestTable, memory))]),
