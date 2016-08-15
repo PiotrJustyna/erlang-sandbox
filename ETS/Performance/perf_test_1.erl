@@ -2,8 +2,8 @@
 -export([test_ets/0]).
 
 test_ets() ->
-    file:write_file("test_results.md", "| Number Of elements in the Table | Insertion Time [ms] | Memory Allocated [MB] |\n| --- | --- | --- |\n"),
-    test_ets(10000000).
+    file:write_file("test_results.md", "| Number Of elements in the Table | Insertion Time [ms] | All Elements Table Lookup Time [ms] | All Elements List Lookup Time [ms] | Average Single Element Lookup Time [microseconds] | Memory Allocated [MB] |\n| --- | --- | --- | --- | --- | --- |\n"),
+    test_ets(5000000).
 
 test_ets(NumberOfElementsInTheTable) when NumberOfElementsInTheTable == 0 -> io:format("All tests finished.\n");
 test_ets(NumberOfElementsInTheTable) when NumberOfElementsInTheTable > 0 ->
@@ -18,15 +18,27 @@ test_ets(NumberOfRepetitions, NumberOfElementsInTheTable) when NumberOfRepetitio
 
 test_large_table(NumberOfElementsInTheTable) ->
   TestTable = ets:new(largeTestTable, [set]),
-  {TimeTaken, _} = timer:tc(fun() -> populate_test_table(TestTable, NumberOfElementsInTheTable) end),
+  {PopulationTimeTaken, _} = timer:tc(fun() -> populate_test_table(TestTable, NumberOfElementsInTheTable) end),
+  {LookupTimeTaken, _} = timer:tc(fun() -> lookup_all_elements_in_test_table(TestTable, NumberOfElementsInTheTable) end),
+  {ListLookupTimeTaken, _} = timer:tc(fun() -> lists:foreach(fun(K) -> ets:lookup(TestTable, K) end, ets:tab2list(TestTable)) end),
 
   io:format("Sample tuple:~n"),
-  io:format("\t- ~p.~n", [create_test_tuple(456)]),
+  io:format("\t- ~p.~n", [ets:lookup(TestTable, 4560)]),
 
   io:format("Table allocation time:~n"),
-  io:format("\t- ~p microseconds.~n", [TimeTaken]),
-  io:format("\t- ~.2fms.~n", [translate_microseconds_to_milliseconds(TimeTaken)]),
-  io:format("\t- ~.2fs.~n", [translate_microseconds_to_seconds(TimeTaken)]),
+  io:format("\t- ~p microseconds.~n", [PopulationTimeTaken]),
+  io:format("\t- ~.2fms.~n", [translate_microseconds_to_milliseconds(PopulationTimeTaken)]),
+  io:format("\t- ~.2fs.~n", [translate_microseconds_to_seconds(PopulationTimeTaken)]),
+
+  io:format("Table lookup time:~n"),
+  io:format("\t- ~p microseconds.~n", [LookupTimeTaken]),
+  io:format("\t- ~.2fms.~n", [translate_microseconds_to_milliseconds(LookupTimeTaken)]),
+  io:format("\t- ~.2fs.~n", [translate_microseconds_to_seconds(LookupTimeTaken)]),
+
+  io:format("List lookup time:~n"),
+  io:format("\t- ~p microseconds.~n", [ListLookupTimeTaken]),
+  io:format("\t- ~.2fms.~n", [translate_microseconds_to_milliseconds(ListLookupTimeTaken)]),
+  io:format("\t- ~.2fs.~n", [translate_microseconds_to_seconds(ListLookupTimeTaken)]),
 
   io:format("Number of table elements:~n"),
   io:format("\t- ~p.~n", [ets:info(TestTable, size)]),
@@ -41,9 +53,12 @@ test_large_table(NumberOfElementsInTheTable) ->
   file:write_file(
     "test_results.md",
     io_lib:fwrite(
-      "| ~p | ~.2f | ~.2f |\n",
+      "| ~p | ~.2f | ~.2f | ~.2f | ~.2f | ~.2f |\n",
       [ets:info(TestTable, size),
-      translate_microseconds_to_milliseconds(TimeTaken),
+      translate_microseconds_to_milliseconds(PopulationTimeTaken),
+      translate_microseconds_to_milliseconds(LookupTimeTaken),
+      translate_microseconds_to_milliseconds(ListLookupTimeTaken),
+      ListLookupTimeTaken / NumberOfElementsInTheTable,
       translate_words_to_megabytes(ets:info(TestTable, memory))]),
     [append]),
 
@@ -53,9 +68,14 @@ test_large_table(NumberOfElementsInTheTable) ->
 
 populate_test_table(TestTable, MaxNumberOfItems) when MaxNumberOfItems == 0 -> TestTable;
 populate_test_table(TestTable, MaxNumberOfItems) when MaxNumberOfItems > 0 ->
-    TestTuple = create_test_tuple(MaxNumberOfItems),
-    ets:insert(TestTable, TestTuple),
-    populate_test_table(TestTable, MaxNumberOfItems - 1).
+  TestTuple = create_test_tuple(MaxNumberOfItems),
+  ets:insert(TestTable, TestTuple),
+  populate_test_table(TestTable, MaxNumberOfItems - 1).
+
+lookup_all_elements_in_test_table(_, MaxNumberOfItems) when MaxNumberOfItems == 0 -> 0;
+lookup_all_elements_in_test_table(TestTable, MaxNumberOfItems) when MaxNumberOfItems > 0 ->
+  ets:lookup(TestTable, MaxNumberOfItems),
+  lookup_all_elements_in_test_table(TestTable, MaxNumberOfItems - 1).
 
 create_test_tuple(Index) ->
   {
