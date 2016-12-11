@@ -17,6 +17,9 @@ This is a sandbox repository I use to play with Haskell.
 * ETS:
  * Distilled core storage example
  * Trigrams
+* RETS:
+  * ETS via REST
+  * Sample Hello World code for now: creates a table and returns its basic info as HTML. Not JSON yet.
 
 In the latests examples I'm exploring ETS - Erlang's in-memory storage. Results of running ```core_storage```'s ```make_a_set```:
 

@@ -2,28 +2,20 @@
 -include("include/yaws_api.hrl").
 -compile(export_all).
 
-box(Str) ->
-    {'div',[{class,"box"}],
-     {pre,[],Str}}.
-
 translate_words_to_bytes(Words) -> Words * 8.
 
 make_a_set() ->
   Tab = ets:new(table, [set]),
   ets:insert(Tab, {1, "Piotr"}),
   ets:insert(Tab, {2, "Justyna"}),
-  hello = ets:info(Tab, size),
-  TableInfo = io_lib:format("Number of elements hello: ~p~n", [7]),
-  % TableInfo = io_lib:format("A#arg.appmoddata = ~p~n"
-  %                   "A#arg.appmod_prepath = ~p~n"
-  %                   "A#arg.querydata = ~p~n",
-  %                   [ets:info(Tab, size),
-  %                    ets:info(Tab, size),
-  %                    ets:info(Tab, size)]),
+  ets:insert(Tab, {3, "Writes"}),
+  ets:insert(Tab, {4, "Erlang"}),
+  TableInfo = io_lib:format(
+    "Number of elements: ~p"
+    "Memory allocated: ~pB",
+    [ets:info(Tab, size),
+    translate_words_to_bytes(ets:info(Tab, memory))]),
   ets:delete(Tab),
   TableInfo.
 
-out(_) ->
-    {ehtml,
-     [{p,[],
-       box(make_a_set())}]}.
+out(_) -> {ehtml, [make_a_set()]}.
