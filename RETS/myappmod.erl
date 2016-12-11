@@ -11,11 +11,20 @@ make_a_set() ->
   ets:insert(Tab, {3, "Writes"}),
   ets:insert(Tab, {4, "Erlang"}),
   TableInfo = io_lib:format(
-    "Number of elements: ~p"
-    "Memory allocated: ~pB",
-    [ets:info(Tab, size),
-    translate_words_to_bytes(ets:info(Tab, memory))]),
+    "{"
+    "\"Elements\": \"~p\","
+    "\"Memory\": \"~pB\""
+    "}",
+     [ets:info(Tab, size),
+     translate_words_to_bytes(ets:info(Tab, memory))]),
   ets:delete(Tab),
   TableInfo.
 
-out(_) -> {ehtml, [make_a_set()]}.
+return_json(Json) ->
+  {
+    content,
+    "application/json; charset=iso-8859-1",
+    Json
+  }.
+
+out(_) -> return_json(make_a_set()).
