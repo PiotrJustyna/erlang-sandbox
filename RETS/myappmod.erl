@@ -1,30 +1,55 @@
 -module(myappmod).
+
 -include("include/yaws_api.hrl").
--compile(export_all).
 
-translate_words_to_bytes(Words) -> Words * 8.
+-export([out/1]).
 
-make_a_set() ->
-  Tab = ets:new(table, [set]),
-  ets:insert(Tab, {1, "Piotr"}),
-  ets:insert(Tab, {2, "Justyna"}),
-  ets:insert(Tab, {3, "Writes"}),
-  ets:insert(Tab, {4, "Erlang"}),
-  TableInfo = io_lib:format(
-    "{"
-    "\"Elements\": \"~p\","
-    "\"Memory\": \"~pB\""
-    "}",
-     [ets:info(Tab, size),
-     translate_words_to_bytes(ets:info(Tab, memory))]),
-  ets:delete(Tab),
-  TableInfo.
+%%%===================================================================
+%%% helpers
+%%%===================================================================
 
 return_json(Json) ->
-  {
-    content,
+  { content,
     "application/json; charset=iso-8859-1",
-    Json
-  }.
+    Json }.
 
-out(_) -> return_json(make_a_set()).
+extract_method(Arg) ->
+    Rec = Arg#arg.req,
+    Rec#http_request.method.
+
+%%%===================================================================
+%%% storage
+%%%===================================================================
+
+create_storage() ->
+  io_lib:format("~p", [ets:new(storage, [set, named_table])]).
+
+get_number_of_storage_elements() ->
+  io_lib:format("~p", [ets:info(storage, size)]).
+
+add_storage_element() ->
+  io_lib:format("~p", [ets:insert(storage, {1})]).
+
+%%%===================================================================
+%%% YAWS
+%%%===================================================================
+
+out(Arg) ->
+  Method = extract_method(Arg),
+  handle_yaws(Method, Arg).
+
+%%%===================================================================
+%%% HTTP handlers
+%%%===================================================================
+
+handle_yaws('PUT', _Arg) ->
+  return_json(create_storage());
+
+handle_yaws('POST', _Arg) ->
+  return_json(add_storage_element());
+
+handle_yaws('GET', _Arg) ->
+  return_json(get_number_of_storage_elements());
+
+handle_yaws(Method, _Arg) ->
+  return_json(io:format("Unknown Method: ~p.", [Method])).
