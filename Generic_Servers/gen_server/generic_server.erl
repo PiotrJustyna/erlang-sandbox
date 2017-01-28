@@ -1,5 +1,8 @@
 -module(generic_server).
 -behaviour(gen_server).
+-export([start_link/0,
+        synchronous_hello/0,
+        asynchronous_hello/0]).
 -export([init/1,
         code_change/3,
         handle_call/3,
@@ -7,19 +10,40 @@
         handle_info/2,
         terminate/2]).
 
-init(Args) -> io:format("init(~p)", [Args]).
+start_link() ->
+  gen_server:start_link({local, generic_server}, generic_server, [], []).
 
-code_change(OldVersion, State, Extra) ->
-  io:format("code_change(~p, ~p, ~p)", [OldVersion, State, Extra]).
+synchronous_hello() ->
+  gen_server:call(generic_server, synchronousHello).
 
-handle_call(Request, From, State) ->
-    io:format("handle_call(~p, ~p, ~p)", [Request, From, State]).
+asynchronous_hello() ->
+  gen_server:cast(generic_server, asynchronousHello).
 
-handle_cast(Request, State) ->
-  io:format("handle_cast(~p, ~p)", [Request, State]).
+% gen_server ->
 
-handle_info(Info, State) ->
-  io:format("handle_info(~p, ~p)", [Info, State]).
+init(Args) ->
+  io:format("Server initialized with arguments: \"~p\"", [Args]),
+  State = [],
+  { ok, State }.
 
-terminate(Reason, State) ->
-  io:format("terminate(~p, ~p)", [Reason, State]).
+code_change(_OldVersion, State, _Extra) ->
+  NewState = State,
+  { ok, NewState }.
+
+handle_call(synchronousHello, _From, State) ->
+  Reply = "synchronousHello handled",
+  NewState = State,
+  { reply, Reply, NewState}.
+
+handle_cast(asynchronousHello, State) ->
+  NewState = State,
+  { noreply, NewState}.
+
+handle_info(_Info, State) ->
+  NewState = State,
+  { noreply, NewState}.
+
+terminate(_Reason, _State) ->
+  io:format("Terminating. Return value ignored.").
+
+% <- gen_server
