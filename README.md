@@ -1,3 +1,9 @@
+- [Erlang Sandbox](#erlang-sandbox)
+  - [Contents](#contents)
+  - [Usage](#usage)
+
+---
+
 # Erlang Sandbox
 
 This is a sandbox repository I use to play with Erlang.
@@ -5,6 +11,7 @@ This is a sandbox repository I use to play with Erlang.
 ## Contents
 
 * Hello World
+* Hello Docker
 * Geometry_1:
  * simple server process
 * Geometry_2:
@@ -21,6 +28,10 @@ This is a sandbox repository I use to play with Erlang.
   * ETS via REST
   * Sample Hello World code for now: creates a table and returns its basic info as HTML. Not JSON yet.
 
-In the latests examples I'm exploring ETS - Erlang's in-memory storage. Results of running ```core_storage```'s ```make_a_set```:
+## Usage
 
-![](https://raw.githubusercontent.com/PiotrJustyna/erlang-sandbox/master/images/core_storage.png)
+To use this code on a vanilla machine, you will need:
+
+* erlang
+* rebar3
+* docker
